@@ -13,26 +13,25 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
-    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, WebClient webClient) {
+    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, WebClient.Builder webClientBuilder) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
-        this.webClient = webClient;
+        this.webClientBuilder = webClientBuilder;
     }
 
     public void createOrder(RequestOrderDto requestOrderDto) throws IllegalAccessException {
 
         Order order = orderMapper.RequestOrderDtoToOrder(requestOrderDto);
         // Check if the product is in stock
-//        Boolean result =  webClient.get()
+//        Boolean result =  webClientBuilder.get()
 //                .uri("http://localhost:8083/api/inventory")
 //                .retrieve()
 //                .bodyToMono(Boolean.class)
@@ -45,8 +44,8 @@ public class OrderService {
 
         List<String>skuCodes =  order.getOrderLineItems().stream().map(OrderLineItems::getSkuCode).toList();
         System.out.println(skuCodes);
-        InventoryResponseDto[] inventoryResponseList =  webClient.get()
-                .uri("http://localhost:8082/api/inventory", uriBuilder -> uriBuilder.queryParam("skuCode", skuCodes).build())
+        InventoryResponseDto[] inventoryResponseList =  webClientBuilder.build().get()
+                .uri("http://inventory-service/api/inventory", uriBuilder -> uriBuilder.queryParam("skuCode", skuCodes).build())
                 .retrieve()
                 .bodyToMono(InventoryResponseDto[].class)
                 .block();
