@@ -27,7 +27,7 @@ public class OrderService {
         this.webClientBuilder = webClientBuilder;
     }
 
-    public void createOrder(RequestOrderDto requestOrderDto) throws IllegalAccessException {
+    public String createOrder(RequestOrderDto requestOrderDto) {
 
         Order order = orderMapper.RequestOrderDtoToOrder(requestOrderDto);
         // Check if the product is in stock
@@ -63,8 +63,9 @@ public class OrderService {
 
         if (allProductInStock){
             orderRepository.save(order);
+            return "Order has been Created.";
         }else {
-            throw new IllegalAccessException("Product is not in stocks.");
+            return "Product is not in stocks.";
         }
     }
 
