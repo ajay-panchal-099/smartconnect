@@ -4,10 +4,12 @@ package com.programmingtechie.orderservice.service;
 import com.programmingtechie.orderservice.dto.InventoryResponseDto;
 import com.programmingtechie.orderservice.dto.RequestOrderDto;
 import com.programmingtechie.orderservice.dto.ResponseOrderDto;
+import com.programmingtechie.orderservice.event.OrderPlacedEvent;
 import com.programmingtechie.orderservice.mapper.OrderMapper;
 import com.programmingtechie.orderservice.model.Order;
 import com.programmingtechie.orderservice.model.OrderLineItems;
 import com.programmingtechie.orderservice.repository.OrderRepository;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -21,10 +23,13 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final WebClient.Builder webClientBuilder;
 
-    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, WebClient.Builder webClientBuilder) {
+    private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
+
+    public OrderService(OrderRepository orderRepository, OrderMapper orderMapper, WebClient.Builder webClientBuilder, KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.webClientBuilder = webClientBuilder;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     public String createOrder(RequestOrderDto requestOrderDto) {
@@ -63,8 +68,11 @@ public class OrderService {
 
         if (allProductInStock){
             orderRepository.save(order);
+            kafkaTemplate.send("order-placed", new OrderPlacedEvent(order.getOrderNumber()));
             return "Order has been Created.";
         }else {
+            System.out.println(allProductInStock);
+            kafkaTemplate.send("order-placed", new OrderPlacedEvent(order.getOrderNumber()));
             return "Product is not in stocks.";
         }
     }

@@ -28,6 +28,7 @@
         <module>Inventory-service</module>
         <module>discovery-server</module>
         <module>api-gateway</module>
+        <module>notification-service</module>
     </modules>
     <scm>
         <connection/>
@@ -64,6 +65,12 @@
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-resolver-dns-native-macos</artifactId>
+            <version>4.1.72.Final</version>
+            <classifier>osx-aarch_64</classifier>
         </dependency>
     </dependencies>
 
